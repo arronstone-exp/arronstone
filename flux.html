@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLUX SCHNELL // INTERNSHIP_LOG // ERROR_FOUND</title>
+    
+    <!-- Importing a Tech/Monospace font similar to Nothing's design language -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-color: #e0e0e0;
+            --accent-green: #39ff14; /* Matrix/Terminal Green */
+            --accent-red: #ff3c3c;   /* Error Red */
+            --nothing-red: #ff3333;  /* Nothing Brand Red */
+            --dim-gray: #333333;
+            --panel-bg: rgba(20, 20, 20, 0.8);
+            --border-style: 1px solid var(--dim-gray);
+            --font-main: 'Share Tech Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: crosshair; /* Sci-fi cursor */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        /* --- CRT Scanline Overlay --- */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 999;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border-left: 1px solid var(--dim-gray);
+            border-right: 1px solid var(--dim-gray);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
+        }
+
+        /* --- Header & Clock --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 20px;
+            border-bottom: var(--border-style);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .brand-title {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .brand-title span {
+            color: var(--nothing-red);
+            font-weight: bold;
+        }
+
+        /* Nothing Style Dot Clock */
+        .clock-container {
+            font-size: 0.8rem;
+            text-align: right;
+            color: var(--accent-green);
+        }
+        
+        .time-digits {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* --- Glitch Animation Classes --- */
+        .glitch-text {
+            position: relative;
+            color: var(--text-color);
+        }
+
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+        }
+
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -1px 0 var(--accent-red);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -1px 0 var(--accent-green);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 10px, 0); }
+            100% { clip: rect(80px, 9999px, 90px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(60px, 9999px, 70px, 0); }
+            100% { clip: rect(10px, 9999px, 40px, 0); }
+        }
+
+        /* --- Sections --- */
+        section {
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s forwards;
+        }
+
+        section:nth-child(2) { animation-delay: 0.2s; }
+        section:nth-child(3) { animation-delay: 0.4s; }
+        section:nth-child(4) { animation-delay: 0.6s; }
+        section:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--nothing-red);
+            padding-left: 10px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            color: var(--accent-green);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        .highlight {
+            color: var(--nothing-red);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+
+        /* --- Code Blocks / Terminal Look --- */
+        .terminal-block {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-block::before {
+            content: "TERMINAL_OUTPUT >>";
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--accent-green);
+            color: #000;
+            font-size: 0.6rem;
+            padding: 2px 5px;
+        }
+
+        .error-msg {
+            color: var(--accent-red);
+        }
+
+        /* --- GIFs & Images --- */
+        .media-container {
+            width: 100%;
+            border: 1px solid var(--dim-gray);
+            margin: 20px 0;
+            background: #000;
+            position: relative;
+        }
+
+        .media-container img {
+            width: 100%;
+            display: block;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .media-container:hover img {
+            opacity: 1;
+        }
+
+        .caption {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 5px;
+            background: #111;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* --- Links --- */
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-link {
+            display: block;
+            padding: 15px;
+            background: transparent;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-link:hover {
+            background: var(--accent-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-green);
+        }
+
+        /* --- Footer & Timer --- */
+        footer {
+            margin-top: auto;
+            border-top: var(--border-style);
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        .timer-box {
+            text-align: right;
+            border: 1px solid var(--dim-gray);
+            padding: 10px;
+            background: #050505;
+        }
+
+        .timer-label {
+            display: block;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--accent-red);
+            margin-bottom: 5px;
+        }
+
+        .timer-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* --- Utility: Status Bar --- */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--nothing-red);
+            color: white;
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 2px;
+            z-index: 1000;
+            transform-origin: bottom;
+            animation: statusPulse 4s infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { transform: scaleY(1); opacity: 1; }
+            50% { transform: scaleY(0.8); opacity: 0.8; }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .container { padding: 10px; border: none; }
+            h2 { font-size: 1.4rem; }
+            header { flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+            .clock-container { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="status-bar">
+        SYSTEM STATUS: UNSTABLE // INTERN: T1_RANK // MODEL: FLUX_SCHNELL_V2
+    </div>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="brand-title">
+                Nothing_Tech<br>
+                <span style="font-size: 0.8em; color: #666;">Internship Log #2024-X</span>
+            </div>
+            
+            <!-- Nothing Style Clock -->
+            <div class="clock-container">
+                <div>LOCAL_TIME</div>
+                <div class="time-digits" id="clock-display">00:00:00</div>
+            </div>
+        </header>
+
+        <main>
+            <!-- INTRO -->
+            <section>
+                <h2 class="glitch-text" data-text="MISSION: FLUX SCHNELL">MISSION: FLUX SCHNELL</h2>
+                <p>
+                    During my tenure at <strong>Black Forest Labs</strong>, I was tasked with the impossible: taming <em>Flux Schnell</em>, one of the world's most advanced open-weight image generation models. My objective was clear: push the boundaries of latent space until something broke.
+                </p>
+                <div class="media-container">
+                    <!-- Placeholder for a cool AI brain or computer gif -->
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3A5eWl4eWl4eWl4eWl4eWl4eWl4eWl4eWl4eWl4eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Ld77zD3fF3WoI/giphy.gif" alt="AI Processing Visual">
+                    <div class="caption">FIG 1.0: VISUALIZING THE NEURAL LOAD</div>
+                </div>
+            </section>
+
+            <!-- THE GRIND -->
+            <section>
+                <h3>PHASE 1: THE DATA OVERLOAD</h3>
+                <p>
+                    I didn't just train the model; I assaulted it with data. I processed and fine-tuned over <strong>25,000+ high-fidelity images</strong>. We aren't talking about your average cat memes. We are talking about complex compositional data designed to break the model's understanding of physics.
+                </p>
+                <div class="terminal-block">
+                    > INITIATING_TRAINING_SEQUENCE()<br>
+                    > LOADING_DATASET: size=25,000<br>
+                    > OPTIMIZING_LATENT_SPACE...<br>
+                    > WARNING: GPU TEMPERATURE CRITICAL<br>
+                    > STATUS: <span class="error-msg">MELTDOWN IMMINENT</span>
+                </div>
+            </section>
+
+            <!-- THE BREAKING (Funny Part) -->
+            <section>
+                <h3>PHASE 2: CRITICAL FAILURES</h3>
+                <p>
+                    True innovation requires breaking things. I broke the model. Not once, not twice, but <span class="highlight">three glorious times</span>.
+                </p>
+                
+                <p><strong>INCIDENT #1:</strong> I introduced a dataset so chaotic it caused a <em>Segmentation Fault</em> in the attention layers. The model started generating Eldritch horrors instead of landscapes.</p>
+                <div class="media-container">
+                    <!-- Funny confused/bug gif -->
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnU1dzV6bnU1dzV6bnU1dzV6bnU1dzV6bnU1dzV6bnU1eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26tn33aiTi1jSL6kI/giphy.gif" alt="Computer Explosion">
+                    <div class="caption">FIG 2.0: ME WATCHING THE GPU FARM SMOKE</div>
+                </div>
+
+                <p><strong>INCIDENT #2:</strong> While helping train the <strong>New Flux Model</strong>, I accidentally inverted the loss function. The model unlearned everything. It forgot what a dog was. It was a disaster.</p>
+                <div class="media-container">
+                    <!-- Fix it gif -->
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJ6OHJ6OHJ6OHJ6OHJ6OHJ6OHJ6OHJ6OHJ6OHJ6OeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYt5jPR6QX5pnqM/giphy.gif" alt="Trying to fix code">
+                    <div class="caption">FIG 2.1: APPLYING HOTFIXES WITH PURE CAFFEINE</div>
+                </div>
+                
+                <p>But I fixed the bugs. I patched the kernel. I optimized the weights. The model came back stronger, faster, and slightly sentient.</p>
+            </section>
+
+            <!-- THE REWARD -->
+            <section>
+                <h3 class="glitch-text" data-text="RANK UPGRADE: T1 LEVEL">RANK UPGRADE: T1 LEVEL</h3>
+                <p>
+                    Despite my destructive tendencies, the leadership recognized my ability to find edge cases that no one else could. I was awarded the prestigious <strong>Software T1 Level</strong> status.
+                </p>
+                <p>
+                    I am now part of the inner circle. I receive invitations to exclusive online events showcasing unreleased models, secret training techniques, and the future of generative AI.
+                </p>
+                <div class="terminal-block">
+                    > USER_LEVEL upgraded to: T1_SOFTWARE_ARCHITECT<br>
+                    > ACCESS_GRANTED: SECRET_EVENTS_CHANNEL<br>
+                    > REWARD: UNLIMITED COMPUTE (Theoretically)
+                </div>
+            </section>
+
+            <!-- LINKS -->
+            <section>
+                <h3>OFFICIAL LINKS & RESOURCES</h3>
+                <p>Do not attempt to train models at home without adult supervision.</p>
+                <div class="link-grid">
+                    <a href="https://blackforestlabs.ai/" target="_blank" class="btn-link">Black Forest Labs</a>
+                    <a href="https://huggingface.co/black-forest-labs/FLUX.1-schnell" target="_blank" class="btn-link">Flux Schnell (HF)</a>
+                    <a href="https://replicate.com/black-forest-labs/flux-schnell" target="_blank" class="btn-link">Replicate Demo</a>
+                    <a href="https://x.com/BlackForestLabs" target="_blank" class="btn-link">X / Twitter</a>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer>
+            <div class="copyright">
+                NOTHING INTERNSHIP DIVISION<br>
+                CONFIDENTIALITY LEVEL: LOW
+            </div>
+
+            <!-- Session Timer -->
+            <div class="timer-box">
+                <span class="timer-label">SESSION_DURATION // RESETS_ON_EXIT</span>
+                <div class="timer-value" id="session-timer">00:00:00</div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        /* 
+         * LOGIC CONTROLLER
+         * Handles Clock and Timer
+         */
+
+        // 1. NOTHING STYLE CLOCK
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // Format with dots for a tech look (e.g. 12.30.45)
+            document.getElementById('clock-display').textContent = `${hours}.${minutes}.${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Run immediately
+
+        // 2. SESSION TIMER
+        // Requirement: Starts when user opens site.
+        // Stops when user opens site again (meaning previous session stops).
+        // Resets when they leave it (Data persistence handling).
+
+        const timerElement = document.getElementById('session-timer');
+        let timerInterval;
+        let sessionStartTime;
+
+        // Function to format milliseconds into HH:MM:SS
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // Function to start the timer
+        function startTimer() {
+            // Check if we already have a start time in this session
+            // If not, set it to now.
+            // Note: Since we are resetting on leave, we don't need complex localStorage 
+            // persistence across reloads if we treat reload as "leave and come back".
+            
+            // However, to support the "stops when open again" logic accurately:
+            // We store the start time. If the page is opened, we check if a timer is already running.
+            // But since this is a single page app logic, we just start fresh on load.
+            
+            sessionStartTime = Date.now();
+            
+            // Update UI immediately
+            timerElement.textContent = "00:00:00";
+
+            // Clear any existing interval
+            if (timerInterval) clearInterval(timerInterval);
+
+            // Start counting
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const elapsed = now - sessionStartTime;
+                timerElement.textContent = formatTime(elapsed);
+            }, 1000);
+        }
+
+        // Initialize Timer on Load
+        window.addEventListener('load', () => {
+            startTimer();
+        });
+
+        // Handle "Reset when they leave it"
+        // We use the beforeunload event to clear data or signal a reset.
+        // Since the prompt asks for it to reset when they leave, the next time they open
+        // it should be 0:00:00. By not saving the start time to permanent localStorage
+        // and relying on a variable that resets on page load, we achieve this behavior.
+        
+        window.addEventListener('beforeunload', () => {
+            // Clear the interval to stop processing
+            clearInterval(timerInterval);
+            
+            // Logic: The user says "resets when they leave it".
+            // If we rely on `sessionStartTime` being a JS variable, it naturally resets 
+            // to 0 when the user reloads the page (leaves and comes back).
+            // We just log the exit for effect in the console.
+            console.log("SESSION_TERMINATED. TIMER_RESET_PROTOCOL_INITIATED.");
+        });
+
+    </script>
+</body>
+</html>
